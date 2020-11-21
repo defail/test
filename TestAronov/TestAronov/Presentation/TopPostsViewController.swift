@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TopPostsViewController: UIViewController {
+final class TopPostsViewController: UIViewController {
 
     let viewModel = TopPostsViewModel()
 
