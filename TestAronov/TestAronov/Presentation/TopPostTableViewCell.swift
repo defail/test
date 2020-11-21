@@ -16,4 +16,9 @@ class TopPostTableViewCell: UITableViewCell {
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var avatarImageView: UIImageView!
     
+    func setPost(_ post: PostRemote) {
+        titleLabel.text = post.title
+        authorLabel.text = post.author
+        commentsLabel.text = "\(post.numberOfComments ?? 0) comments"
+    }
 }

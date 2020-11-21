@@ -16,7 +16,7 @@ struct PostListResult: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: NestedCodingKeys.self)
         let rootData = try? container.nestedContainer(keyedBy: NestedCodingKeys.self, forKey: NestedCodingKeys.data)
-        let childrenPosts = try? rootData?.decode([PostChildrenRemote].self, forKey: .children)
+        let childrenPosts = try! rootData?.decode([PostChildrenRemote].self, forKey: .children)
         posts = childrenPosts?.compactMap({ $0.post })
     }
 }
