@@ -48,12 +48,35 @@ final class TopPostsViewController: UIViewController {
     }
     
     private func displayInApp(url: String) {
-        guard let url = URL(string: url) else { return }
+        guard let url = URL(string: url.formatUrl()) else { return }
         let safariVC = SFSafariViewController(url: url)
         self.present(safariVC, animated: true, completion: nil)
     }
+    
+    // MARK: Image saving
+    
+    private func showSaveImageAlert(for image: UIImage) {
+        let alert = UIAlertController(title: "Do you want to save image?", message: nil, preferredStyle: .alert)
+        let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
+            UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.showImageSaveResult), nil)
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alert.addAction(saveAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    @objc private func showImageSaveResult(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        let text = error != nil ? "Failed to save" : "Successfully saved"
+        let alert = UIAlertController(title: text, message: nil, preferredStyle: .alert)
+        let closeAction = UIAlertAction(title: "Ok", style: .cancel, handler: nil)
+        alert.addAction(closeAction)
+        present(alert, animated: true, completion: nil)
+    }
 }
 
+//MARK: UITableViewDataSource
 extension TopPostsViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.posts.count
@@ -63,6 +86,7 @@ extension TopPostsViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: TopPostTableViewCell.reuseIdentifier, for: indexPath) as! TopPostTableViewCell
         let post = viewModel.posts[indexPath.row]
         cell.setPost(post)
+        cell.delegate = self
         return cell
     }
     
@@ -70,14 +94,20 @@ extension TopPostsViewController: UITableViewDelegate, UITableViewDataSource {
         tableView.deselectRow(at: indexPath, animated: true)
         
         let post = viewModel.posts[indexPath.row]
-        guard let url = post.fullImagePath else { return }
+        guard let url = post.sourceImageUrl else { return }
         displayInApp(url: url)
     }
-    
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if tableView.isNearBottomEdge(edgeOffset: 200) {
             viewModel.getPosts(refresh: false)
         }
+    }
+}
+
+//MARK: TopPostTableViewCellDelegate
+extension TopPostsViewController: TopPostTableViewCellDelegate {
+    func imageTapped(_ image: UIImage) {
+        showSaveImageAlert(for: image)
     }
 }
