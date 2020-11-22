@@ -8,8 +8,8 @@
 import UIKit
 
 extension UIImageView {
-    public func imageFromServerURL(urlString: String) {
-        self.image = nil
+    public func imageFromServerURL(urlString: String, with placeholder: UIImage) {
+        self.image = placeholder
         URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
 
             if let error = error {

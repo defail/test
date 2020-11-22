@@ -32,10 +32,15 @@ class TopPostTableViewCell: UITableViewCell {
     
     func setPost(_ post: PostRemote) {
         titleLabel.text = post.title
-        authorLabel.text = post.author
         commentsLabel.text = "\(post.numberOfComments ?? 0) comments"
+        
+        var authorText = "Author: \(post.author ?? "")"
+        if let time = post.creatingDate {
+            authorText += getAuthorRegestrationText(time)
+        }
+        authorLabel.text = authorText
         if !post.isDefaultThumnbnail ,let path = post.thumbnailPath {
-            avatarImageView.imageFromServerURL(urlString: path)
+            avatarImageView.imageFromServerURL(urlString: path, with: #imageLiteral(resourceName: "defaultImage"))
         } else {
             avatarImageView.image = #imageLiteral(resourceName: "defaultImage")
         }
@@ -43,6 +48,11 @@ class TopPostTableViewCell: UITableViewCell {
         let tap = UITapGestureRecognizer(target: self, action: #selector(imageTap))
         tapGesture = tap
         avatarImageView.addGestureRecognizer(tap)
+    }
+    
+    private func getAuthorRegestrationText(_ time: Int) -> String {
+        let date = Date(timeIntervalSince1970: TimeInterval(time))
+        return " \(date.hours(from: Date())) hours ago"
     }
     
     @objc private func imageTap() {

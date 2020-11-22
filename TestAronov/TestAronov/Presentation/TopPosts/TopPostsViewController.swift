@@ -6,7 +6,8 @@
 //
 
 import UIKit
-import SafariServices
+
+fileprivate let segueToSource = "toSource"
 
 final class TopPostsViewController: UIViewController {
 
@@ -18,6 +19,15 @@ final class TopPostsViewController: UIViewController {
         super.viewDidLoad()
         configureTableView()
         configureVM()
+        navigationController?.delegate = self
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if let activityUserInfo = view.window?.windowScene?.userActivity?.userInfo, let url = activityUserInfo[SceneDelegate.sourceImageUrl] as? String {
+            
+            performSegue(withIdentifier: segueToSource, sender: url)
+        }
     }
     
     private func configureVM() {
@@ -47,10 +57,10 @@ final class TopPostsViewController: UIViewController {
         viewModel.getPosts(refresh: true)
     }
     
-    private func displayInApp(url: String) {
-        guard let url = URL(string: url.formatUrl()) else { return }
-        let safariVC = SFSafariViewController(url: url)
-        self.present(safariVC, animated: true, completion: nil)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == segueToSource, let controller = segue.destination as? SourceImageViewController {
+            controller.url = sender as? String
+        }
     }
     
     // MARK: Image saving
@@ -95,7 +105,7 @@ extension TopPostsViewController: UITableViewDelegate, UITableViewDataSource {
         
         let post = viewModel.posts[indexPath.row]
         guard let url = post.sourceImageUrl else { return }
-        displayInApp(url: url)
+        performSegue(withIdentifier: segueToSource, sender: url)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -111,3 +121,16 @@ extension TopPostsViewController: TopPostTableViewCellDelegate {
         showSaveImageAlert(for: image)
     }
 }
+
+extension TopPostsViewController: UINavigationControllerDelegate {
+    
+    func navigationController(_ navigationController: UINavigationController,
+                              didShow viewController: UIViewController,
+                              animated: Bool) {
+        if viewController == self && animated == true {
+            view.window?.windowScene?.session.scene!.userActivity = nil
+        }
+    }
+    
+}
+
